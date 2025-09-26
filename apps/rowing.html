@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+<meta charset="UTF-8">
+<title>Rowing Progress</title>
+<style>
+#rowing-widget {
+  background: rgb(164, 149, 149); /* soft translucent background */
+  backdrop-filter: blur(8px); /* adds frosted glass effect */
+  border-radius: 4px;
+  padding: 5px;
+  width: 100%; /* match your other widgets */
+  height: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* subtle shadow */
+  color: #ffffff; /* text color */
+  font-family: "Helvetica Neue", sans-serif;
+  overflow: hidden;
+  margin: 0
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* optional if you want full-height container */
+  overflow: hidden; 
+}
+
+#rowing-widget h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0px;
+}
+
+#progress-bar-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+#progress-bar {
+  height: 100%;
+  width: 0;
+  background: rgba(198, 142, 190, 0.85); /* keep your purple tint */
+  border-radius: 12px;
+  transition: width 0.5s ease;
+}
+
+.tick {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+#progress-text {
+  font-size: 0.9rem;
+  text-align: center;
+  color: #ffffffcc; /* slightly transparent white */
+}
+</style>
+
+</head>
+<body>
+<div id="rowing-widget">
+    <h2>Monthly Rowing Progress</h2>
+        <div id="progress-bar-container" style="position: relative; width: 95%; height: 30px; background: #eee; border-radius: 8px;">
+    <div id="progress-bar" style="height: 100%; width: 0; background: #c68ebe; border-radius: 8px;"></div>
+    </div>
+
+    <div class="progress-text" id="progress-text">Loading...</div>
+</div>
+
+<script>
+(async () => {
+  const GOAL = 100000;
+  const CHECKPOINTS = [33000, 66000, 100000];
+  const TICK_INTERVAL = 10000;
+
+  // Get current month name
+    const now = new Date();
+    const monthName = now.toLocaleString('default', { month: 'long' }); // e.g., "September"
+    const widgetTitle = document.querySelector('#rowing-widget h2');
+    if (widgetTitle) {
+        widgetTitle.textContent = `${monthName} Rowing`;
+    }
+
+  try {
+    const response = await fetch('http://localhost:8001/rowing_data');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Rowing data fetched:', data);
+
+    const metersThisMonth = data.metersThisMonth || 0;
+
+    // Progress bar
+    const progressBar = document.getElementById('progress-bar');
+    if (progressBar) progressBar.style.width = Math.min(100, (metersThisMonth / GOAL) * 100) + '%';
+
+    // Draw ticks
+    const container = document.getElementById('progress-bar-container');
+    if (container) {
+      // Clear old ticks
+      container.querySelectorAll('.tick').forEach(t => t.remove());
+
+      for (let tick = TICK_INTERVAL; tick < GOAL; tick += TICK_INTERVAL) {
+        const tickEl = document.createElement('div');
+        tickEl.className = 'tick';
+        tickEl.style.position = 'absolute';
+        tickEl.style.top = 0;
+        tickEl.style.height = '100%';
+        tickEl.style.width = '2px';
+        tickEl.style.background = 'rgba(0,0,0,0.3)';
+        tickEl.style.left = (tick / GOAL * 100) + '%';
+        container.appendChild(tickEl);
+      }
+    }
+
+    // Checkpoints
+    CHECKPOINTS.forEach((cp, index) => {
+      const el = document.getElementById(`cp${index+1}`);
+      if (el && metersThisMonth >= cp) el.classList.add('completed');
+    });
+
+    // Progress text
+    const progressTextEl = document.getElementById('progress-text');
+    if (progressTextEl) progressTextEl.textContent = `${metersThisMonth.toLocaleString()} meters rowed this month`;
+
+  } catch (e) {
+    console.error('Error fetching or displaying rowing data:', e);
+    const progressTextEl = document.getElementById('progress-text');
+    if (progressTextEl) progressTextEl.textContent = "Could not load rowing data.";
+  }
+})();
+</script>
+
+
+</body>
+</html>
