@@ -5,10 +5,10 @@
   --widget-text-muted: #ffffffcc;
 
   --widget-accent: #c68ebe;             /* main accent color */
-  --widget-accent-light: rgba(198, 142, 190, 0.2);
+  --widget-accent-light: rgba(198, 142, 190, 0.4);
   --widget-accent-strong: rgba(198, 142, 190, 0.85);
 
-  --widget-border-radius: 8px;
+  --widget-border-radius: 4px;
   --widget-padding: 6px;
   --widget-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -91,6 +91,47 @@
   border-left: 4px solid var(--widget-accent);
   padding-left: 6px;
 }
+#calendar-widget .event {
+  position: relative;
+}
+
+
+#calendar-widget .event-desc-tooltip {
+  display: none;
+  position: absolute;
+  background: white;
+  color:black;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  z-index: 10;
+  max-width: 400px;
+  max-height: 50vh; /* max half of viewport height */
+  overflow-y: auto;
+  white-space: normal;
+
+  top: 100%;   /* default below */
+  left: 0;
+  margin-top: 4px;
+}
+
+#calendar-widget .event:hover .event-desc-tooltip {
+  display: block;
+}
+
+/* Make event container relative so tooltip is positioned correctly */
+#calendar-widget .event {
+  position: relative;
+}
+
+/* Flip tooltip above for last 3 events */
+#calendar-widget .event:nth-last-child(-n+3) .event-desc-tooltip {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
 
 /* ========== Birthdays Widget ========== */
 
@@ -103,6 +144,7 @@
   margin-bottom: 4px;
   background: var(--widget-accent-light);
   border-left: 4px solid var(--widget-accent);
+  margin-left: -40px; /* cancels container padding */
 }
 
 .birthday-name {
