@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upcoming Events</title>
+  <link rel="stylesheet" href="widget.css">
+</head>
+<body>
+  <div id="calendar-widget" class="widget">
+    <h2>Upcoming Events</h2>
+    <div id="events-container">Loading...</div>
+  </div>
+
+  <script>
+  (async () => {
+    const FEED_URL = "http://localhost:8000/calendar_rss"; // or your Render URL
+
+    function parseRSS(xml) {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xml, "text/xml");
+      const items = Array.from(xmlDoc.querySelectorAll("item"));
+      return items.map(item => ({
+        title: item.querySelector("title")?.textContent || "",
+        start: item.querySelector("pubDate")?.textContent || "",
+        end: item.querySelector("endDate")?.textContent || "",
+        description: item.querySelector("description")?.textContent || ""
+      }));
+    }
+
+    function parseAllDayDate(dateStr) {
+      const ymd = dateStr.split("T")[0].split("-");
+      const y = Number(ymd[0]), m = Number(ymd[1]) - 1, d = Number(ymd[2]);
+      return new Date(Date.UTC(y, m, d));
+    }
+
+    try {
+      const response = await fetch(FEED_URL);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const xmlText = await response.text();
+      const events = parseRSS(xmlText);
+
+      const now = new Date();
+      const threeDaysMs = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+      const upcomingEvents = events
+        .map(ev => {
+          const rawStart = ev.start;
+          const rawEnd = ev.end || ev.start;
+
+          const isAllDay = /T00:00:00(\+00:00)?$/.test(rawStart) && /T00:00:00(\+00:00)?$/.test(rawEnd);
+
+          let startDate, endDate;
+          if (isAllDay) {
+            startDate = parseAllDayDate(rawStart);
+            endDate = parseAllDayDate(rawEnd);
+            endDate = new Date(endDate.getTime() - 1); // inclusive
+          } else {
+            startDate = new Date(rawStart);
+            endDate = new Date(rawEnd);
+          }
+
+          return { ...ev, startDate, endDate, isAllDay };
+        })
+        .filter(ev => ev.endDate >= now)
+        .sort((a, b) => a.startDate - b.startDate)
+        .slice(0, 10);
+
+      const container = document.getElementById("events-container");
+      container.innerHTML = "";
+
+      if (upcomingEvents.length === 0) {
+        container.textContent = "No upcoming events.";
+        return;
+      }
+
+      upcomingEvents.forEach(ev => {
+        const div = document.createElement("div");
+        div.className = "event";
+
+        // Highlight if starting within 3 days
+        if (ev.startDate - now <= threeDaysMs) div.classList.add("soon");
+
+        function formatDate(d, allDay = false) {
+          if (allDay) {
+            return d.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+          } else {
+            return d.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+        }
+
+        const startYMD = [ev.startDate.getUTCFullYear(), ev.startDate.getUTCMonth(), ev.startDate.getUTCDate()];
+        const endYMD = [ev.endDate.getUTCFullYear(), ev.endDate.getUTCMonth(), ev.endDate.getUTCDate()];
+        const isMultiDay = startYMD[0] !== endYMD[0] || startYMD[1] !== endYMD[1] || startYMD[2] !== endYMD[2];
+
+        let dateStr;
+        if (ev.isAllDay && !isMultiDay) {
+          dateStr = formatDate(ev.startDate, true);
+        } else if (!ev.isAllDay && !isMultiDay) {
+          dateStr = formatDate(ev.startDate, false);
+        } else {
+          dateStr = `${formatDate(ev.startDate, ev.isAllDay)} → ${formatDate(ev.endDate, ev.isAllDay)}`;
+        }
+
+        div.innerHTML = `
+          <div class="event-date">${dateStr}</div>
+          <div class="event-title">${ev.title}</div>
+          ${ev.description ? `<span class="event-desc-tooltip">${ev.description}</span>` : ""}
+        `;
+        container.appendChild(div);
+      });
+
+    } catch (err) {
+      console.error("Error loading calendar:", err);
+      document.getElementById("events-container").textContent = "Could not load events.";
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+/* ========== Theme Variables ========== */
+:root {
+  --widget-bg: rgba(164, 149, 149, 0.6); /* background glass */
+  --widget-text: #ffffff;
+  --widget-text-muted: #ffffffcc;
+
+  --widget-accent: #c68ebe;             /* main accent color */
+  --widget-accent-light: rgba(198, 142, 190, 0.2);
+  --widget-accent-strong: rgba(198, 142, 190, 0.85);
+
+  --widget-border-radius: 8px;
+  --widget-padding: 6px;
+  --widget-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== Base Widget Style ========== */
+.widget {
+  background: var(--widget-bg);
+  backdrop-filter: blur(8px);
+  border-radius: var(--widget-border-radius);
+  padding: var(--widget-padding);
+  box-shadow: var(--widget-shadow);
+  color: var(--widget-text);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  overflow: hidden;
+}
+
+.widget h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* ========== Rowing Widget ========== */
+#rowing-widget {
+  width: 100%;
+}
+
+
+#progress-text {
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--widget-text-muted);
+}
+/* Rowing widget */
+.progress-bar-container {
+  position: relative;
+  width: 95%;
+  height: 30px;
+  background: #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--widget-text-muted);
+  border-radius: 8px;
+  transition: width 0.5s ease;
+}
+
+.tick {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: rgba(0,0,0,0.3);
+}
+
+
+/* ========== Calendar Widget ========== */
+#calendar-widget .event {
+  padding: 6px 10px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#calendar-widget .event:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#calendar-widget .event.soon {
+  background-color: var(--widget-accent-light);
+  border-left: 4px solid var(--widget-accent);
+  padding-left: 6px;
+}
+
+/* ========== Birthdays Widget ========== */
+
+
+#birthdays-widget .birthday-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px 6px 6px; 
+  border-radius: 4px;
+  margin-bottom: 4px;
+  background: var(--widget-accent-light);
+  border-left: 4px solid var(--widget-accent);
+}
+
+.birthday-name {
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.birthday-date {
+  font-size: 0.85rem;
+  color: var(--widget-text);
+}

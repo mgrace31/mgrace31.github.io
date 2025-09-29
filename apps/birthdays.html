@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upcoming Birthdays</title>
+  <link rel="stylesheet" href="widget.css">
+</head>
+<body>
+  <div id="birthdays-widget" class="widget">
+    <h2>Upcoming Birthdays</h2>
+    <ul id="birthday-list" class="birthday-list">
+      <li>Loading...</li>
+    </ul>
+  </div>
+
+  <script>
+    async function loadBirthdays() {
+      try {
+        const resp = await fetch('http://127.0.0.1:8000/birthday_data');
+        const birthdays = await resp.json();
+        const container = document.getElementById("birthday-list");
+        container.innerHTML = "";
+
+        birthdays.forEach(bd => {
+          const [year, month, day] = bd.birthday.split('-');
+          const display = new Date(2000, month - 1, day).toLocaleDateString([], { 
+            month: 'short', 
+            day: 'numeric' 
+          });
+
+          const li = document.createElement("li");
+          li.className = "birthday-item";
+          li.innerHTML = `
+            <span class="birthday-name">${bd.name}</span>
+            <span class="birthday-date">${display}</span>
+          `;
+          container.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Failed to load birthdays:", err);
+      }
+    }
+
+    loadBirthdays();
+  </script>
+</body>
+</html>
