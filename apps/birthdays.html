@@ -16,7 +16,7 @@
   <script>
     async function loadBirthdays() {
       try {
-        const resp = await fetch('http://127.0.0.1:8000/birthday_data');
+        const resp = await fetch('https://firefox-homepage.onrender.com/birthday_data');
         const birthdays = await resp.json();
         const container = document.getElementById("birthday-list");
         container.innerHTML = "";
