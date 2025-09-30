@@ -61,6 +61,7 @@
   background: var(--widget-text-muted);
   border-radius: 8px;
   transition: width 0.5s ease;
+  background: var(--widget-accent)
 }
 
 .tick {
